@@ -1,112 +1,275 @@
-//¸ŞÀÎÇÔ¼ö
-int main(void) {
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
-    Mat img = imread("image.png", IMREAD_COLOR);
 
-    //ROI¿µ¿ª »ı¼º¿ë Æ÷ÀÎÆ®
-    Point pts[4];
-    pts[0] = Point(0.48 * img.cols, 0.6 * img.rows);
-    pts[1] = Point(0.6 * img.cols, 0.6 * img.rows);
-    pts[2] = Point(0.85 * img.cols, 0.9 * img.rows);
-    pts[3] = Point(0.2 * img.cols, 0.9 * img.rows);
+#include <iostream>
+#include <string>
+#include <vector>
 
-    Mat img_gray = img.clone();
-    cvtColor(img_gray, img_gray, COLOR_BGR2GRAY);
-    // ÀÌ¹ÌÁö ÀüÃ³¸® (»ö»ó°ø°£ º¯È¯, °¡¿ì½Ã¾È ºí·¯ Àû¿ë)
-    Mat hsv, blurred;
-    cvtColor(img, hsv, COLOR_BGR2HSV);
-    GaussianBlur(hsv, blurred, Size(5, 5), 0);
 
-    // ³ë¶õ»ö Â÷¼±°ú Èò»ö Â÷¼±À» ÇÕÃÄ¼­ ¸¶½ºÅ· °á°ú »ı¼º
-    Mat mask = Mat::zeros(img.rows, img.cols, CV_8UC1);
-    fillConvexPoly(mask, pts, 4, Scalar(255, 0, 0));
+//winspool.lib
+//comdlg32.lib
+//advapi32.lib
+//shell32.lib
+//ole32.lib
+//oleaut32.lib
+//uuid.lib
+//odbc32.lib
+//odbccp32.lib
 
-    Mat binary, binary_y, binary_w;
-    inRange(blurred, Scalar(20, 100, 100), Scalar(30, 255, 255), binary_y); // ³ë¶õ»ö ¸¶½ºÅ©
-    bitwise_and(binary_y, mask, binary_y); // ROI ¸¶½ºÅ© Àû¿ë
-    inRange(blurred, Scalar(0, 0, 200), Scalar(255, 30, 255), binary_w); // Èò»ö ¸¶½ºÅ©
-    bitwise_and(binary_w, mask, binary_w); // ROI ¸¶½ºÅ© Àû¿ë
-    // ¸¶½ºÅ·µÈ ÀÌ¹ÌÁö »ı¼º
-    bitwise_or(binary_w, binary_y, binary);
-    Mat img_masked;
-    bitwise_and(img_gray, binary, img_masked);
 
-    vector<Vec2f> lines;
-    HoughLines(img_masked, lines, 1, CV_PI / 180, 30, 30, 100);
-    Mat HoughLineDetected_img(img_masked.rows, img_masked.cols, CV_8U, cv::Scalar(255));
-    std::vector<cv::Vec2f>::const_iterator it = lines.begin();
+#include "RoadLaneDetector.h"
 
-    while (it != lines.end()) { // it(iterator)¹İº¹ÀÚ
-        float rho = (*it)[0];   // Ã¹ ¹øÂ° ¿ä¼Ò´Â rho °Å¸®
-        float theta = (*it)[1]; // µÎ ¹øÂ° ¿ä¼Ò´Â µ¨Å¸ °¢µµ
-        if (theta < get_radian(90) && theta >get_radian(35)) { // °¢µµ ¿ìÃø ¹üÀ§ 35 ~ 85 °¢µµ ¼±¿¡¼­ ÀÎÁö
-            Point pt1(rho / cos(theta), 0); // Ã¹ ¿ìÃø°¢¿¡¼­ ÇØ´ç ¼±ÀÇ ±³Â÷Á¡   
-            aPoint1[(aIndex) % ArraySize] = pt1; //¸¶Ä¡ Queue°¡ µ¹¾Æ°¡µí »çÀÌÁî ¾È¿¡¼­¸¸ °ªÀ» µ¡¾º¿ì¸ç Ã¤¿ò
-            Point pt2((rho - HoughLineDetected_img.rows * sin(theta)) / cos(theta), HoughLineDetected_img.rows);
-            // ¸¶Áö¸· ¿ìÃø°¢¿¡¼­ ÇØ´ç ¼±ÀÇ ±³Â÷Á¡
-            aPoint2[(aIndex++) % ArraySize] = pt2; // ´ÙÀ½ ÀÎµ¦½º °ªÀ¸·Î ³Ñ¾î°¡¸ç °ªÀ» ³ÖÀ½
-            //line(img, pt1, pt2, cv::Scalar(255), 2); // ¸ğµç Á÷¼± ±×¸®±â
-        }
-        else if (theta<get_radian(145) && theta>get_radian(90)) { // °¢µµ ÁÂÃø ¹üÀ§ 95 ~ 145 °¢µµ ¼±¿¡¼­ ÀÎÁö
-            cv::Point pt1(0, rho / sin(theta)); // Ã¹ ÁÂÃø°¢¿¡¼­ ÇØ´ç ¼±ÀÇ ±³Â÷Á¡  
-            bPoint1[(bIndex) % ArraySize] = pt1; //¸¶Ä¡ Queue°¡ µ¹¾Æ°¡µí »çÀÌÁî ¾È¿¡¼­¸¸ °ªÀ» µ¡¾º¿ì¸ç Ã¤¿ò
-            Point pt2(HoughLineDetected_img.cols, (rho - HoughLineDetected_img.cols * cos(theta)) / sin(theta));
-            // ¸¶Áö¸· ÁÂÃø°¢¿¡¼­ ÇØ´ç ¼±ÀÇ ±³Â÷Á¡
-            bPoint2[(bIndex++) % ArraySize] = pt2; // ´ÙÀ½ ÀÎµ¦½º °ªÀ¸·Î ³Ñ¾î°¡¸ç °ªÀ» ³ÖÀ½
-            //line(img, pt1, pt2, cv::Scalar(255), 2); // ¸ğµç Á÷¼± ±×¸®±â
-        }
-        ++it; //¹İº¹ÀÚ Áõ°¡
-    }
-    //--    Æò±Õ Á÷¼± ÃßÁ¤ ---//
-    Point aP1S(0, 0), aP2S(0, 0), bP1S(0, 0), bP2S(0, 0); //°¢ ³¡Á¡ÀÇ Æò±Õ°ªÀ» ´ã±â À§ÇÑ Á¡
-    int a1cnt = 0, a2cnt = 0, b1cnt = 0, b2cnt = 0;
-    for (int i = 0; i < ArraySize; i++) {//¹è¿­¿¡ ÀúÀåµÈ ¸ğµç Á¡ÀÇ ÁÂÇ¥ ÇÕÀ» ±¸ÇÔ
-        aP1S += aPoint1[i];
-        aP2S += aPoint2[i];
-        bP1S += bPoint1[i];
-        bP2S += bPoint2[i];
-        if (aPoint1[i] != Point(0, 0)) {
-            a1cnt++;
-        }
-        if (aPoint2[i] != Point(0, 0)) {
-            a2cnt++;
-        }
-        if (bPoint1[i] != Point(0, 0)) {
-            b1cnt++;
-        }
-        if (bPoint2[i] != Point(0, 0)) {
-            b2cnt++;
-        }
-    }
-    aP1S /= a1cnt;//¹è¿­ÀÇ ÀúÀåµÈ ¸ğµç Á¡ÀÇ Æò±Õ°ªÀ» ±¸ÇÔ
-    aP2S /= a2cnt;
-    bP1S /= b1cnt;
-    bP2S /= b2cnt;
-    //line(img, aP1S, aP2S, cv::Scalar(0,0,255), 2); // ÃßÁ¤µÈ Æò±Õ Á¡À¸·Î Á÷¼± ±×¸®±â
-    //line(img, bP1S, bP2S, cv::Scalar(0,0,255), 2); //ÃßÁ¤µÈ Æò±Õ Á¡À¸·Î Á÷¼± ±×¸®±â
+using namespace cv;
+const int max_value_H = 360 / 2;
+const int max_value = 255;
+const String window_capture_name = "Video Capture";
+const String window_detection_name = "Object Detection";
+int low_H = 0, low_S = 0, low_V = 0;
+int high_H = max_value_H, high_S = max_value, high_V = max_value;
+static void on_low_H_thresh_trackbar(int, void*)
+{
+	low_H = min(high_H - 1, low_H);
+	setTrackbarPos("Low H", window_detection_name, low_H);
+}
+static void on_high_H_thresh_trackbar(int, void*)
+{
+	high_H = max(high_H, low_H + 1);
+	setTrackbarPos("High H", window_detection_name, high_H);
+}
+static void on_low_S_thresh_trackbar(int, void*)
+{
+	low_S = min(high_S - 1, low_S);
+	setTrackbarPos("Low S", window_detection_name, low_S);
+}
+static void on_high_S_thresh_trackbar(int, void*)
+{
+	high_S = max(high_S, low_S + 1);
+	setTrackbarPos("High S", window_detection_name, high_S);
+}
+static void on_low_V_thresh_trackbar(int, void*)
+{
+	low_V = min(high_V - 1, low_V);
+	setTrackbarPos("Low V", window_detection_name, low_V);
+}
+static void on_high_V_thresh_trackbar(int, void*)
+{
+	high_V = max(high_V, low_V + 1);
+	setTrackbarPos("High V", window_detection_name, high_V);
+}
+int main1()
+{
+	//RGB -> HSV Convert : Parameter {min/Max H,S,V}
+	VideoCapture cap("input_1st_lane.mp4");  //ì˜ìƒ ë¶ˆëŸ¬ì˜¤ê¸°
+	//VideoCapture cap("input_2nd_lane.mp4");  //ì˜ìƒ ë¶ˆëŸ¬ì˜¤ê¸°
+	namedWindow(window_capture_name);
+	namedWindow(window_detection_name);
+	// Trackbars to set thresholds for HSV values
+	createTrackbar("Low H", window_detection_name, &low_H, max_value_H, on_low_H_thresh_trackbar);
+	createTrackbar("High H", window_detection_name, &high_H, max_value_H, on_high_H_thresh_trackbar);
+	createTrackbar("Low S", window_detection_name, &low_S, max_value, on_low_S_thresh_trackbar);
+	createTrackbar("High S", window_detection_name, &high_S, max_value, on_high_S_thresh_trackbar);
+	createTrackbar("Low V", window_detection_name, &low_V, max_value, on_low_V_thresh_trackbar);
+	createTrackbar("High V", window_detection_name, &high_V, max_value, on_high_V_thresh_trackbar);
+	Mat frame, frame_HSV, frame_threshold;
+	while (true) {
+		cap >> frame;
+		if (frame.empty())
+		{
+			break;
+		}
+		// Convert from BGR to HSV colorspace
+		cvtColor(frame, frame_HSV, COLOR_BGR2HSV);
+		// Detect the object based on HSV Range Values
+		inRange(frame_HSV, Scalar(low_H, low_S, low_V), Scalar(high_H, high_S, high_V), frame_threshold);
+		// Show the frames
+		imshow(window_capture_name, frame);
+		imshow(window_detection_name, frame_threshold);
+		char key = (char)waitKey(30);
+		if (key == 'q' || key == 27)
+		{
+			break;
+		}
+	}
+	return 0;
+}
 
-    Mat result = drivingArea(img, bP1S, aP1S, aP2S, bP2S);
+int main()
+{
+	//OpenCL...SIMD->ëª…ë ¹1ìˆ˜í–‰N-->SSE->CPU thread OpenCL ì—ì„œ ìë™ìœ¼ë¡œ ìƒì„± í›„ ì‹¤í–‰
+	//         1->4... for pixel[i] += pixel[i] .... pixel[i+0] += pixel[i+0]
+	//                                               pixel[i+1] += pixel[i+1]
+	//                                               pixel[i+2] += pixel[i+2]
+	//                                               pixel[i+3] += pixel[i+3]
+	cv::ocl::setUseOpenCL(true);//tbb
+	cout << cv::ocl::haveOpenCL() << endl;
+	if (!cv::ocl::haveOpenCL())
+	{
+		cout << "OpenCL IS not avaiable ..." << endl;
+		return 0;
+	}
 
-    //ROS¿ë
-    //ros::init(argc, argv, "image_publisher");
-    //// ÀÌ¹ÌÁö¸¦ ¹ßÇàÇÒ ROS ³ëµå ÇÚµé »ı¼º
-    //ros::NodeHandle nh;
-    //// ¹ßÇàÇÒ ÀÌ¹ÌÁö ÆÄÀÏ °æ·Î
-    //std::string filename = "path/to/image.png";
-    //// OpenCV¸¦ »ç¿ëÇÏ¿© ÀÌ¹ÌÁö ÆÄÀÏ ·Îµå
-    //cv::Mat image = cv::imread(filename, cv::IMREAD_COLOR);
-    //// cv_bridge¸¦ »ç¿ëÇÏ¿© OpenCV ÀÌ¹ÌÁö¸¦ ROS ¸Ş½ÃÁö·Î º¯È¯
-    //sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image).toImageMsg();
-    //// ÀÌ¹ÌÁö ¹ßÇàÀ» À§ÇÑ ROS publisher »ı¼º
-    //ros::Publisher pub = nh.advertise<sensor_msgs::Image>("image_topic", 1);
-    //// ¹ßÇàÇÒ ÀÌ¹ÌÁö ·çÇÁ
-    //ros::Rate loop_rate(10);
-    //while (ros::ok()){
-    //    // ÀÌ¹ÌÁö ¹ßÇà
-    //    pub.publish(msg);
-    //    // ·çÇÁ ¼Óµµ À¯Áö
-    //    loop_rate.sleep();
-    //}
+	cv::namedWindow("result", WindowFlags::WINDOW_NORMAL);
+	const Size wndSize = Size(854, 480);
+	cv::resizeWindow("result", wndSize);
+	RoadLaneDetector roadLaneDetector;
+	Mat img_frame, img_filter, img_edges, img_mask, img_lines, img_result;
+	vector<Vec4i> lines;//totally
+	vector<vector<Vec4i> > separated_lines;//left vs right
+	vector<Point> lane;//
+	string dir;//direction string {left, right, strigt}
+	
+	VideoCapture video("input_2nd_lane.mp4");  //ì˜ìƒ ë¶ˆëŸ¬ì˜¤ê¸°
+	//VideoCapture video("input_1st_lane.mp4");  //ì˜ìƒ ë¶ˆëŸ¬ì˜¤ê¸°
 
-    return 0;
+	if (!video.isOpened())
+	{
+		cout << "ë™ì˜ìƒ íŒŒì¼ì„ ì—´ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. \n" << endl;
+		return -1;
+	}
+
+	video.read(img_frame);
+	if (img_frame.empty()) return -1;
+
+	VideoWriter writer;
+	int codec = VideoWriter::fourcc('X', 'V', 'I', 'D');  //ì›í•˜ëŠ” ì½”ë± ì„ íƒ
+
+	//double fps_in = video.get(CAP_PROP_FPS);/25 fps
+	double fps = video.get(CAP_PROP_FPS);	//í”„ë ˆì„
+	string filename = "./result.avi";		//ê²°ê³¼ íŒŒì¼
+
+	writer.open(filename, codec, fps, img_frame.size(), CV_8UC3);
+	if (!writer.isOpened()) {
+		cout << "ì¶œë ¥ì„ ìœ„í•œ ë¹„ë””ì˜¤ íŒŒì¼ì„ ì—´ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. \n";
+		return -1;
+	}
+
+	video.read(img_frame);
+	int cnt = 0;
+
+	double fps_in = video.get(CAP_PROP_FPS);
+
+	int frames = video.get(CAP_PROP_POS_FRAMES);//current frame number
+	int frames_count = video.get(CAP_PROP_FRAME_COUNT);//totally frame count
+	
+	const int moving_avg_count = 3;
+	Mat accumulated_img[moving_avg_count];
+	int running_count = 0;
+
+	Mat avg_img(img_frame.rows, img_frame.cols, CV_64FC3);
+
+	while (1) {
+		//1. ì›ë³¸ ì˜ìƒì„ ì½ì–´ì˜¨ë‹¤.
+		if (!video.read(img_frame)) break;
+		
+		{
+			
+			accumulated_img[running_count++] = img_frame.clone();
+
+			if (running_count < moving_avg_count) continue;
+			else
+			{
+				Mat temp;
+				avg_img.convertTo(avg_img, CV_64FC3);
+				avg_img = 0;
+				for (int i = 0; i < moving_avg_count; ++i)
+				{
+					accumulated_img[i].convertTo(temp, CV_64FC3);
+					avg_img += (temp*1.2);
+				}
+				avg_img.convertTo(avg_img, CV_8UC1, 1. / moving_avg_count);
+
+				for (int i = 0; i < moving_avg_count; ++i)
+					accumulated_img[i].convertTo(temp, CV_8UC1);
+
+				for (int i = 0; i < moving_avg_count-1;i++)
+					accumulated_img[i+1].copyTo(accumulated_img[i]);
+				
+				avg_img.convertTo(avg_img, CV_8UC3);
+				running_count--;
+			}
+			
+		}
+		img_frame = avg_img;
+
+		//pre-processing
+		//noise -> signal { object vs noise } enhance object .... regression noise
+		Mat enhanceImg;
+		bilateralFilter(img_frame, enhanceImg, 10, 50, 50);
+		//
+
+		//2. í°ìƒ‰, ë…¸ë€ìƒ‰ ë²”ìœ„ ë‚´ì— ìˆëŠ” ê²ƒë§Œ í•„í„°ë§í•˜ì—¬ ì°¨ì„  í›„ë³´ë¡œ ì €ì¥í•œë‹¤.
+		img_filter = roadLaneDetector.extract_colors(enhanceImg);
+
+		//3. ì˜ìƒì„ GrayScale ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
+		cvtColor(img_filter, img_filter, COLOR_BGR2GRAY);
+
+		//enhancement image level
+		if(0)
+		{
+			Mat binaryAdaptive;
+			int blockSize = 21; // ì´ì›ƒ í¬ê¸°
+			int threshold = 10; //í™”ì†Œë¥¼ (í‰ê· -ê²½ê³„ ê°’)ê³¼ ë¹„êµ
+			adaptiveThreshold(img_filter, // ì…ë ¥ì˜ìƒ
+				binaryAdaptive, // ì´ì§„í™” ê²°ê³¼ ì˜ìƒ
+				255, // ìµœëŒ€ í™”ì†Œ ê°’ 
+				ADAPTIVE_THRESH_MEAN_C, // Adaptive í•¨ìˆ˜
+				THRESH_BINARY_INV, // ì´ì§„í™” íƒ€ì…
+				blockSize,  // ì´ì›ƒí¬ê¸°
+				threshold); // threshold used
+			Mat im_floodfill = img_filter.clone();
+			floodFill(im_floodfill, cv::Point(0, 0), Scalar(255));
+
+			// Invert floodfilled image
+			Mat im_floodfill_inv;
+			bitwise_not(im_floodfill, im_floodfill_inv);
+
+			// Combine the two images to get the foreground.
+			Mat binaryAdaptive_filled = (img_filter | im_floodfill_inv);
+		}
+
+		//4. Canny Edge Detectionìœ¼ë¡œ ì—ì§€ë¥¼ ì¶”ì¶œ. (ì¡ìŒ ì œê±°ë¥¼ ìœ„í•œ Gaussian í•„í„°ë§ë„ í¬í•¨)
+		double threshold1=20, threshold2 = 80;
+		Canny(img_filter, img_edges, threshold1, threshold2);
+		
+		//5. ìë™ì°¨ì˜ ì§„í–‰ë°©í–¥ ë°”ë‹¥ì— ì¡´ì¬í•˜ëŠ” ì°¨ì„ ë§Œì„ ê²€ì¶œí•˜ê¸° ìœ„í•œ ê´€ì‹¬ ì˜ì—­ì„ ì§€ì •
+		img_mask = roadLaneDetector.limit_region(img_edges);
+
+		//6. Hough ë³€í™˜ìœ¼ë¡œ ì—ì§€ì—ì„œì˜ ì§ì„  ì„±ë¶„ì„ ì¶”ì¶œ
+		lines = roadLaneDetector.houghLines(img_mask);
+
+		if (lines.size() > 0) {
+			//7. ì¶”ì¶œí•œ ì§ì„ ì„±ë¶„ìœ¼ë¡œ ì¢Œìš° ì°¨ì„ ì— ìˆì„ ê°€ëŠ¥ì„±ì´ ìˆëŠ” ì§ì„ ë“¤ë§Œ ë”°ë¡œ ë½‘ì•„ì„œ ì¢Œìš° ê°ê° ì§ì„ ì„ ê³„ì‚°í•œë‹¤. 
+			// ì„ í˜• íšŒê·€ë¥¼ í•˜ì—¬ ê°€ì¥ ì í•©í•œ ì„ ì„ ì°¾ëŠ”ë‹¤.
+			separated_lines = roadLaneDetector.separateLine(img_mask, lines);
+			lane = roadLaneDetector.regression(separated_lines, img_frame);
+			
+			//8. ì§„í–‰ ë°©í–¥ ì˜ˆì¸¡
+			dir = roadLaneDetector.predictDir();
+
+			//9. ì˜ìƒì— ìµœì¢… ì°¨ì„ ì„ ì„ ìœ¼ë¡œ ê·¸ë¦¬ê³  ë‚´ë¶€ ë‹¤ê°í˜•ì„ ìƒ‰ìœ¼ë¡œ ì±„ìš´ë‹¤. ì˜ˆì¸¡ ì§„í–‰ ë°©í–¥ í…ìŠ¤íŠ¸ë¥¼ ì˜ìƒì— ì¶œë ¥
+			img_result = roadLaneDetector.drawLine(img_frame, lane, dir);
+		}
+		
+		if (!img_result.empty())
+		{
+			//10. ê²°ê³¼ë¥¼ ë™ì˜ìƒ íŒŒì¼ë¡œ ì €ì¥. ìº¡ì³í•˜ì—¬ ì‚¬ì§„ ì €ì¥
+			writer << img_result;
+			if (cnt++ == 15)
+				imwrite("img_result.jpg", img_result);  //ìº¡ì³í•˜ì—¬ ì‚¬ì§„ ì €ì¥
+
+			//11. ê²°ê³¼ ì˜ìƒ ì¶œë ¥
+			cv::line(img_result, Point(0, 5), Point(img_result.cols - 1, 5), Scalar(10, 10, 10), 20);
+			//cv::line(img_result, Point(0, 5), Point(frame, 5), Scalar(100, 50, 200), 30);
+			frames = video.get(CAP_PROP_POS_FRAMES);
+			drawMarker(img_result, Point((frames * 1.0 / frames_count) * wndSize.width, 5), Scalar(100, 50, 200), MARKER_TRIANGLE_DOWN, 10);
+			imshow("result", img_result);
+		}
+		
+
+		//esc í‚¤ ì¢…ë£Œ
+		if (waitKey(1) == 27) 
+			break;
+	}
+	return 0;
 }
