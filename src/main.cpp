@@ -17,7 +17,7 @@ class LaneDetectorNode {
 public:
    LaneDetectorNode(ros::NodeHandle& nh, image_transport::ImageTransport& it) : nh_(nh), it_(it) {
         // Subscribe to the input video feed and publish the output Twist message
-        image_sub_ = it_.subscribe("/jetbot_camera/raw", 1, &LaneDetectorNode::imageCallback, this);
+        image_sub_ = it_.subscribe("/camera/image", 1, &LaneDetectorNode::imageCallback, this);
         image_pub_1 = it_.advertise("/lane_detection/result",3);
         image_pub_2 = it_.advertise("/lane_detection/mask",3);
         image_pub_3 = it_.advertise("/lane_detection/edge",3);
@@ -74,16 +74,20 @@ public:
                 twist_msg.linear.z = 0.0;
                 twist_msg.angular.x = 0.0;
                 twist_msg.angular.y = 0.0;
-                if (dir == "left") {
-                    twist_msg.angular.z = 1.0;
+                if (dir == "Left Turn") {
+                    twist_msg.angular.z = 0.3;
+		    twist_msg.linear.x = 0.05;
                 }
-                else if (dir == "right") {
-                    twist_msg.angular.z = -1.0;
+                else if (dir == "Right Turn") {
+                    twist_msg.angular.z = -0.3;
+		    twist_msg.linear.x = 0.05;
                 }
                 else {
                     twist_msg.angular.z = 0.0;
+		    twist_msg.linear.x = 0.15;
                 }
                 twist_pub_.publish(twist_msg);
+		cout << "Twist_msg : " << twist_msg << endl;
             }
         }
         catch (cv_bridge::Exception& e) {
