@@ -21,9 +21,9 @@ private:
     bool left_detect = false, right_detect = false;
 
     //관심 영역 범위 계산시 사용 
-    double poly_bottom_width = 0.85;  //사다리꼴 아래쪽 가장자리 너비 계산을 위한 백분율
-    double poly_top_width = 0.07;     //사다리꼴 위쪽 가장자리 너비 계산을 위한 백분율
-    double poly_height = 0.4;         //사다리꼴 높이 계산을 위한 백분율
+    double poly_bottom_width = 0.95;  //사다리꼴 아래쪽 가장자리 너비 계산을 위한 백분율
+    double poly_top_width = 0.95;     //사다리꼴 위쪽 가장자리 너비 계산을 위한 백분율
+    double poly_height = 0.3;         //사다리꼴 높이 계산을 위한 백분율
 
 public:
     Mat filter_colors(Mat img_frame);
