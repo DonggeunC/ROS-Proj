@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(autorace)
+project(lanedetection)
 set(OpenCV_LIBS opencv_core opencv_highgui opencv_imgcodecs opencv_imgproc)
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -107,7 +107,7 @@ find_package(OpenCV REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES autorace
+  LIBRARIES lanedetection
   CATKIN_DEPENDS cv_bridge geometry_msgs image_transport roscpp std_msgs
   DEPENDS system_lib
 )
@@ -120,13 +120,13 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
   include
-#  ${OpenCV_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/autorace.cpp
+#   src/${PROJECT_NAME}/lanedetection.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -144,8 +144,21 @@ include_directories(
   ${OpenCV_LIBRARIES}
   detectlane_lib
  )
+
  add_executable(trafficlight src/trafficlight.cpp)
  target_link_libraries(trafficlight
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+ )
+
+ add_executable(signdetect src/signdetector.cpp)
+ target_link_libraries(signdetect
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+ )
+
+ add_executable(levelcross src/levelcrossing.cpp)
+ target_link_libraries(levelcross
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
  )
@@ -209,7 +222,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_autorace.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_lanedetection.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

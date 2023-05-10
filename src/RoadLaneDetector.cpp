@@ -87,7 +87,7 @@ vector<vector<Vec4i>> RoadLaneDetector::separateLine(Mat img_edges, vector<Vec4i
 	Point p1, p2;
 	vector<double> slopes;
 	vector<Vec4i> final_lines, left_lines, right_lines;
-	double slope_thresh = 0.3;
+	double slope_thresh = 0.2;
 
 	//검출된 직선들의 기울기를 계산
 	for (int i = 0; i < lines.size(); i++) {
@@ -109,7 +109,7 @@ vector<vector<Vec4i>> RoadLaneDetector::separateLine(Mat img_edges, vector<Vec4i
 	}
 
 	//선들을 좌우 선으로 분류
-	img_center = (double)((img_edges.cols / 2));
+	img_center = (double)((img_edges.cols / 2 - 1));
 
 	for (int i = 0; i < final_lines.size(); i++) {
 		p1 = Point(final_lines[i][0], final_lines[i][1]);
@@ -178,7 +178,7 @@ vector<Point> RoadLaneDetector::regression(vector<vector<Vec4i>> separatedLines,
 	//좌우 선 각각의 두 점을 계산한다.
 	//y = m*x + b  --> x = (y-b) / m
 	int y1 = img_input.rows;
-	int y2 = 470;
+	int y2 = img_input.rows / 2 -1 ;	//470
 
 	double right_x1 = ((y1 - right_b.y) / right_m) + right_b.x;
 	double right_x2 = ((y2 - right_b.y) / right_m) + right_b.x;

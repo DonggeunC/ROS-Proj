@@ -104,7 +104,7 @@ image_pub2_ = it_.advertise("/traffic_red",1);
 image_pub3_ = it_.advertise("/traffic_yellow",1);
 
 // 이미지 토픽 구독 설정
-ros::Subscriber image_sub = nh.subscribe("/jetbot_camera/raw", 1, imageCallback);
+ros::Subscriber image_sub = nh.subscribe("/camera/image", 1, imageCallback);
 
 // ROS 메시지 수신 대기
 while(ros::ok()){

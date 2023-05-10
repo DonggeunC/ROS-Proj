@@ -76,15 +76,15 @@ public:
                 twist_msg.angular.y = 0.0;
                 if (dir == "Left Turn") {
                     twist_msg.angular.z = 0.3;
-		    twist_msg.linear.x = 0.05;
+					twist_msg.linear.x = 0.05;
                 }
                 else if (dir == "Right Turn") {
                     twist_msg.angular.z = -0.3;
-		    twist_msg.linear.x = 0.05;
+					twist_msg.linear.x = 0.05;
                 }
                 else {
                     twist_msg.angular.z = 0.0;
-		    twist_msg.linear.x = 0.15;
+					twist_msg.linear.x = 0.15;
                 }
                 twist_pub_.publish(twist_msg);
 		cout << "Twist_msg : " << twist_msg << endl;
