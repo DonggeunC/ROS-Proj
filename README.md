@@ -1,6 +1,6 @@
 ## 2023 ICT 융합 프로젝트 공모전 (대한상공회의소 서울기술교육센터)
 ## ROS Based Autonomous Driving 
-## (ROS,OpenCV를 이용한 자율주행 로봇)
+### (ROS,OpenCV를 이용한 자율주행 로봇)
 
 ### 참여자
    - 조동근 (팀장)
