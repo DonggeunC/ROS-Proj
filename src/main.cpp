@@ -12,6 +12,7 @@ using namespace cv;
 image_transport::Publisher* pImg_pub_1 = NULL;
 image_transport::Publisher* pImg_pub_2 = NULL;
 image_transport::Publisher* pImg_pub_3 = NULL;
+image_transport::Publisher* pImg_pub_4 = NULL;
 
 class LaneDetectorNode {
 public:
@@ -21,9 +22,11 @@ public:
         image_pub_1 = it_.advertise("/lane_detection/result",3);
         image_pub_2 = it_.advertise("/lane_detection/mask",3);
         image_pub_3 = it_.advertise("/lane_detection/edge",3);
+        image_pub_4 = it_.advertise("/lane_detection/filter",3);
         pImg_pub_1 = &image_pub_1;
         pImg_pub_2 = &image_pub_2;
         pImg_pub_3 = &image_pub_3;
+        pImg_pub_4 = &image_pub_4;
         twist_pub_ = nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
     }
 
@@ -56,6 +59,7 @@ public:
                 sensor_msgs::ImagePtr img_msg;
                 sensor_msgs::ImagePtr img_msg2;
                 sensor_msgs::ImagePtr img_msg3;
+                sensor_msgs::ImagePtr img_msg4;
                 std_msgs::Header header;
 
                 header.stamp = ros::Time::now();
@@ -63,9 +67,11 @@ public:
                 img_msg = cv_bridge::CvImage(header, sensor_msgs::image_encodings::BGR8, img_result).toImageMsg();
                 img_msg2 = cv_bridge::CvImage(header, sensor_msgs::image_encodings::MONO8, img_mask).toImageMsg();
                 img_msg3 = cv_bridge::CvImage(header, sensor_msgs::image_encodings::MONO8, img_edges).toImageMsg();
+                img_msg4 = cv_bridge::CvImage(header, sensor_msgs::image_encodings::MONO8, img_filter).toImageMsg();
                 pImg_pub_1->publish(img_msg);
                 pImg_pub_2->publish(img_msg2);
                 pImg_pub_3->publish(img_msg3);
+                pImg_pub_4->publish(img_msg4);
 
                 // Publish the Twist message containing the predicted steering direction
                 geometry_msgs::Twist twist_msg;
@@ -104,6 +110,7 @@ private:
     image_transport::Publisher image_pub_1;
     image_transport::Publisher image_pub_2;
     image_transport::Publisher image_pub_3;
+    image_transport::Publisher image_pub_4;
 };
 
 int main(int argc, char** argv) {

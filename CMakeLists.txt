@@ -162,6 +162,24 @@ include_directories(
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
  )
+
+ add_executable(laserscan src/laser.cpp)
+ target_link_libraries(laserscan
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+ )
+
+ add_executable(parking src/parking.cpp)
+ target_link_libraries(parking
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+ )
+
+ add_executable(parkingtest src/parkingtest.cpp)
+ target_link_libraries(parkingtest
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+ )
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
